@@ -3,35 +3,47 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#101511">
+<meta name="theme-color" content="#080C0A">
+<meta name="description" content="Nexora — controle financeiro pessoal com IA: receitas, despesas, cartões, faturas, consórcios, simulador de investimentos e dólar em tempo real.">
 <title>Nexora — inteligência financeira pessoal</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2338B76B'/%3E%3Cpath d='M9 23V9l14 14V9' stroke='%23101511' stroke-width='3' fill='none' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%233CCB7F'/%3E%3Cpath d='M9 23V9l14 14V9' stroke='%23080C0A' stroke-width='3' fill='none' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/components.css">
 <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
 <a class="skip" href="#main">Ir para o conteúdo</a>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
 <div class="shell">
   <aside class="sidebar" id="sidebar" aria-label="Navegação principal">
-    <div class="brand"><svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#38B76B"/><path d="M9 23V9l14 14V9" stroke="#101511" stroke-width="3" fill="none" stroke-linejoin="round"/></svg><span>Nexora</span></div>
+    <div class="brand"><span class="logo"><svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><path d="M8 24V8l16 16V8" stroke="#04120a" stroke-width="3.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg></span><span>Nexora<small>Private Finance</small></span></div>
     <nav id="nav"></nav>
-    <p class="side-note">Dados guardados apenas neste navegador.</p>
+    <p class="side-note"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg><span>Seus dados ficam guardados apenas neste navegador.</span></p>
   </aside>
-  <div class="scrim" id="scrim"></div>
   <div class="main-col">
     <header class="topbar">
-      <button class="icon-btn menu-btn" id="menuBtn" aria-label="Abrir menu" aria-controls="sidebar" aria-expanded="false">☰</button>
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="Abrir menu" aria-controls="sidebar" aria-expanded="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       <h1 id="pageTitle">Painel</h1>
-      <div class="top-actions"><button class="btn btn-primary" data-quick="Nova transação">+ Nova transação</button></div>
+      <div class="top-actions">
+        <a class="pill" href="#/cambio" id="usdPill" aria-label="Cotação do dólar"><i class="live"></i><span class="hide-s">USD</span><span class="num" id="usdVal">—</span></a>
+        <button class="btn btn-primary" data-act="novo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="hide-s">Novo</span></button>
+      </div>
     </header>
     <main id="main" tabindex="-1"></main>
   </div>
 </div>
+<div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-hidden="true" role="dialog" aria-labelledby="drawerTitle">
-  <div class="drawer-head"><h2 id="drawerTitle"></h2><button class="icon-btn" id="drawerClose" aria-label="Fechar">✕</button></div>
+  <div class="drawer-head"><div><h2 id="drawerTitle"></h2><p id="drawerSub"></p></div><button class="icon-btn" id="drawerClose" aria-label="Fechar"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="drawer-body" id="drawerBody"></div>
 </aside>
+<dialog id="confirm" aria-labelledby="confirmTitle">
+  <form method="dialog"><h2 id="confirmTitle"></h2><p id="confirmText"></p>
+    <div class="row" style="justify-content:flex-end"><button class="btn" value="no">Cancelar</button><button class="btn btn-primary" value="ok" id="confirmOk">Confirmar</button></div></form>
+</dialog>
+<div id="toasts" aria-live="polite"></div>
+<div class="tip" id="tip" role="tooltip"></div>
+<noscript><p style="padding:24px">O Nexora precisa de JavaScript para funcionar.</p></noscript>
 <script type="module" src="js/app.js"></script>
 </body>
 </html>

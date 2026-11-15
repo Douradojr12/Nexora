@@ -1,50 +1,55 @@
 # Nexora — PROJECT.md
 
-Plataforma de controle financeiro pessoal (HTML/CSS/JS modular, sem frameworks, sem backend). Interface em pt-BR.
-**Regra de trabalho:** uma etapa por vez; só avançar com autorização explícita.
+Plataforma de controle financeiro pessoal (HTML/CSS/JS modular, sem frameworks, sem build, sem backend). Interface em pt-BR.
 
 ## Como executar
-Módulos ES não funcionam via `file://`. Na pasta do projeto: `python3 -m http.server 8000` e abra http://localhost:8000.
-Alternativa: `npx serve .`
+Módulos ES não funcionam via `file://`. Na pasta do projeto: `python3 -m http.server 8000` e abra http://localhost:8000 (ou `npx serve .`).
+Pode ser publicado como site estático (GitHub Pages, Netlify, Vercel…).
+Testes do motor financeiro: `node --test tests/finance.test.mjs`.
 
-## Plano
-1. Fundação e identidade visual — **concluída (aguardando validação)**
-2. Armazenamento (IndexedDB, migrações) e motor financeiro, com testes de valores conhecidos
-3. Transações, contas, cartões/faturas, parcelas, orçamentos, metas
-4. Relatórios, gráficos reais, CSV, investimentos, simuladores, cotações externas
-5. Nexora AI (análise local determinística; adaptador opcional para IA generativa via backend seguro)
-6. Qualidade, acessibilidade, backup/restauração, segurança, publicação estática
+## Telas
+- **Painel** — sobra do mês, receitas × despesas (6 meses), gastos por categoria, próximos vencimentos, dicas da IA, dólar.
+- **Receitas e despesas** — salário/receita fixa (repete todo mês), receita variável, despesas fixas e avulsas; navegação por mês e filtros.
+- **Cartões e faturas** — cadastro com limite, fechamento e vencimento; limite usado/disponível; compras parceladas; faturas por mês; marcar como paga.
+- **Consórcios** — parcela, pagas/total, quantas faltam, já pago, falta pagar, término previsto; registrar parcela paga.
+- **Investimentos** — simulador de juros compostos com gráfico; carteira com aplicado × atual.
+- **Câmbio** — dólar em tempo real (atualiza a cada 60 s), gráfico de 30 dias, euro, bitcoin e conversor.
+- **Nexora AI** — diagnóstico e dicas locais + chat; opcionalmente conectado ao Claude com a chave de API do usuário.
+- **Configurações** — nome, chave/modelo da IA, backup (exportar/restaurar JSON), dados de exemplo, apagar tudo.
 
-## Regras financeiras obrigatórias (a implementar nas Etapas 2–3)
-Saldo atual ≠ saldo projetado · pago/recebido ≠ pendente/previsto · transferência não é receita nem despesa · compra no cartão e pagamento da fatura não contam duas vezes · parcelas: total, pagas, restantes, vencimentos · patrimônio líquido = ativos − passivos sem duplicidade · aportes/retiradas ≠ ganhos/perdas · editar/excluir atualiza todos os indicadores · estornos, reembolsos, pagamentos parciais e datas/fusos devem ter interpretação documentada antes de implementar · demo nunca misturada com dados reais · sem dados, informar em vez de inventar. Valores sempre em centavos inteiros.
-
-## Estrutura atual
-- `index.html` — casca (menu lateral, cabeçalho, painel deslizante)
+## Estrutura
+- `index.html` — casca (menu, cabeçalho, gaveta de formulários, diálogo, avisos)
 - `css/style.css` (tokens, layout, animações) · `css/components.css` · `css/responsive.css`
-- `js/app.js` (componentes, painel, navegação) · `js/router.js` (rotas por hash) · `js/demo-data.js` (dados fictícios, a remover na Etapa 2)
-- `assets/` (vazia, reservada)
+- `js/finance.js` — motor financeiro puro (centavos inteiros, datas ISO como texto)
+- `js/store.js` — estado + localStorage (`nexora:v1`), backup, dados de exemplo
+- `js/pages.js` — telas (HTML a partir do estado) · `js/app.js` — rotas, ações, chat, efeitos
+- `js/forms.js` — gaveta, formulários, validação · `js/charts.js` — gráficos SVG próprios
+- `js/cambio.js` — cotações · `js/ai.js` — análise local e integração com o Claude · `js/util.js`
+- `tests/finance.test.mjs` — cenários com valores conhecidos
 
-## Concluído na Etapa 1
-Identidade visual (paleta #101511 / #252D27 / #38B76B / #E5F0E8), menu lateral, cabeçalho, 8 rotas, painel inicial com cards, gráfico SVG, categorias, contas, vencimentos, resumo e atalhos; painel deslizante; animações de entrada com `prefers-reduced-motion`; layout responsivo; estados vazios; banner e selos "demonstração".
+## Regras financeiras implementadas
+- Valores em centavos inteiros; parcelas com divisão inteira e os centavos restantes na 1ª parcela.
+- Compra no cartão só conta como despesa no mês em que a fatura vence — nunca duas vezes.
+- Compra feita no dia do fechamento (ou depois) entra na fatura seguinte. A fatura é identificada pelo mês do vencimento.
+- Limite usado = todas as parcelas em faturas não pagas (inclusive futuras). Pagar a fatura libera o limite.
+- Lançamento fixo repete no mesmo dia (ajustado ao fim do mês) a partir do início, até o mês de encerramento opcional.
+- "Registrar parcela paga" do consórcio cria uma despesa na categoria Consórcio; excluir essa despesa devolve a parcela.
+- Dados de exemplo ficam marcados (`demo`) e exibem aviso; sem dados, as telas informam em vez de inventar.
 
 ## Decisões técnicas
-- Rotas por hash (`#/painel`) para funcionar em hospedagem estática.
-- Gráfico em SVG próprio (sem biblioteca).
-- Datas ISO tratadas como texto na exibição, evitando deslocamento de fuso.
-- Fonte: pilha do sistema (Inter se instalada), sem dependência externa.
-- Módulos de lógica (calculations, storage etc.) só serão criados quando necessários.
-- Atalhos e "Nova transação" abrem apenas um painel provisório; os formulários vêm na Etapa 3.
+- Armazenamento em `localStorage` (volume pequeno; IndexedDB não se justificou). O backup JSON nunca inclui a chave da IA.
+- Cotações: AwesomeAPI, com Frankfurter (BCE) como reserva; última cotação fica em cache local.
+- IA: sem backend, a chamada ao Claude é feita por `fetch` direto do navegador com a chave do próprio usuário
+  (`anthropic-dangerous-direct-browser-access`). Adequado para uso pessoal; para um produto público, mover a chamada para um backend.
+- Gráficos: verde (receitas) × âmbar (despesas) e âmbar × azul no simulador — pares validados para daltonismo.
+- Sem dependências externas (fontes do sistema); todas as entradas do usuário são escapadas antes de ir ao HTML.
 
-## Testes executados (reais, Etapa 1)
-- `node --check` nos 3 arquivos JS: sem erros de sintaxe.
-- Navegador headless (Playwright/Chromium) via servidor local, desktop 1366px e celular 390px: painel carrega; navegação por rotas funciona; painel deslizante abre e fecha com Esc; menu móvel abre e fecha ao navegar; sem rolagem horizontal no celular; **nenhum erro de console**.
-- Inspeção visual de captura do painel desktop. A versão móvel **não** foi inspecionada visualmente.
+## Testes executados
+- `node --test`: 9 cenários do motor financeiro (datas, recorrência, faturas, parcelas, limite, consórcio, vencimentos, simulador).
+- Chromium headless (1440 px e 390 px): todas as telas, criar despesa, validação de formulário, pagar fatura, registrar parcela,
+  simulador, chat local, menu móvel; sem rolagem horizontal; nenhum erro de console.
 
-## Problemas conhecidos / a verificar manualmente
-- Revisão visual no celular real e em Firefox/Safari.
-- Navegação por teclado e leitor de tela só verificadas superficialmente (aprofundar na Etapa 6).
-- Sem preferência de tema claro (fora do escopo).
-- Nome "Nexora": disponibilidade comercial não verificada.
-
-## Próximas tarefas (Etapa 2, após autorização)
-Modelo de dados, IndexedDB com versionamento, `calculations.js` em centavos, validações, testes com cenários conhecidos, tratamento de erros.
+## Não verificado / pendente
+- Cotações reais: no ambiente de desenvolvimento a rede bloqueia as APIs; a tela foi testada com respostas simuladas.
+- Chat com o Claude: não testado com chave real.
+- Firefox/Safari e leitor de tela; tema claro; orçamentos e metas; relatórios/CSV.
