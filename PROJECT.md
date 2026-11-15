@@ -5,7 +5,7 @@ Plataforma de controle financeiro pessoal (HTML/CSS/JS modular, sem frameworks, 
 ## Como executar
 Módulos ES não funcionam via `file://`. Na pasta do projeto: `python3 -m http.server 8000` e abra http://localhost:8000 (ou `npx serve .`).
 Pode ser publicado como site estático (GitHub Pages, Netlify, Vercel…).
-Testes do motor financeiro: `node --test tests/finance.test.mjs`.
+Testes: `node --test tests/*.mjs`.
 
 ## Telas
 - **Painel** — sobra do mês, receitas × despesas (6 meses), gastos por categoria, próximos vencimentos, dicas da IA, dólar.
@@ -15,6 +15,7 @@ Testes do motor financeiro: `node --test tests/finance.test.mjs`.
 - **Investimentos** — simulador de juros compostos com gráfico; carteira com aplicado × atual.
 - **Câmbio** — dólar em tempo real (atualiza a cada 60 s), gráfico de 30 dias, euro, bitcoin e conversor.
 - **Nexora AI** — diagnóstico e dicas locais + chat; opcionalmente conectado ao Claude com a chave de API do usuário.
+- **Lançamento rápido** — campo no Painel e no botão Novo: escreva ou fale uma frase ("comprei 40 reais de comida no mercado no pix") e o formulário já abre preenchido para confirmar.
 - **Configurações** — nome, chave/modelo da IA, backup (exportar/restaurar JSON), dados de exemplo, apagar tudo.
 
 ## Estrutura
@@ -25,7 +26,9 @@ Testes do motor financeiro: `node --test tests/finance.test.mjs`.
 - `js/pages.js` — telas (HTML a partir do estado) · `js/app.js` — rotas, ações, chat, efeitos
 - `js/forms.js` — gaveta, formulários, validação · `js/charts.js` — gráficos SVG próprios
 - `js/cambio.js` — cotações · `js/ai.js` — análise local e integração com o Claude · `js/util.js`
-- `tests/finance.test.mjs` — cenários com valores conhecidos
+- `js/parser.js` — interpreta a frase do lançamento rápido (função pura, sem IA)
+- `manifest.webmanifest`, `sw.js`, `icons/` — instalação na tela inicial (PWA); o service worker usa rede primeiro
+- `tests/finance.test.mjs`, `tests/parser.test.mjs` — cenários com valores conhecidos
 
 ## Regras financeiras implementadas
 - Valores em centavos inteiros; parcelas com divisão inteira e os centavos restantes na 1ª parcela.
@@ -52,4 +55,6 @@ Testes do motor financeiro: `node --test tests/finance.test.mjs`.
 ## Não verificado / pendente
 - Cotações reais: no ambiente de desenvolvimento a rede bloqueia as APIs; a tela foi testada com respostas simuladas.
 - Chat com o Claude: não testado com chave real.
+- Ditado por voz: testado com reconhecimento simulado; depende do navegador (Chrome/Android funciona; iPhone é limitado — usar o microfone do teclado).
+- Instalação como app: manifesto e service worker verificados em Chromium; não testada em aparelho real.
 - Firefox/Safari e leitor de tela; tema claro; orçamentos e metas; relatórios/CSV.

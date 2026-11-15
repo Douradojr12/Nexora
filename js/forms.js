@@ -78,18 +78,19 @@ export function abrirForm({ titulo, sub, fields, values = {}, salvar = 'Salvar',
 const achar = (lista, id) => lista.find(x => x.id === id);
 
 // tipo: 'salario' | 'variavel' | 'despesa' (novo) ou id (edição)
-export function formLancamento(tipo, id) {
+export function formLancamento(tipo, id, pre) {
   const l = id ? achar(state.lancamentos, id) : null;
   const ehRec = l ? l.tipo === 'receita' : tipo !== 'despesa', fixa = l ? l.recorrente : tipo === 'salario';
   const titulo = l ? 'Editar lançamento' : tipo === 'salario' ? 'Salário ou receita fixa' : tipo === 'variavel' ? 'Receita variável' : 'Nova despesa';
-  const sub = ehRec ? (fixa ? 'Entra automaticamente todo mês.' : 'Freelas, vendas, bônus, rendimentos…') : 'Aluguel, mercado, contas e tudo que sai da conta.';
+  const sub = pre ? 'Entendi assim. Confira e toque em Salvar.' : ehRec ? (fixa ? 'Entra automaticamente todo mês.' : 'Freelas, vendas, bônus, rendimentos…') : 'Aluguel, mercado, contas e tudo que sai da conta.';
   abrirForm({
     titulo, sub,
-    values: l || { descricao: tipo === 'salario' ? 'Salário' : '', data: hojeISO(), categoria: ehRec ? (tipo === 'salario' ? 'Salário' : 'Freelance') : 'Alimentação', recorrente: fixa },
+    values: l || { descricao: tipo === 'salario' ? 'Salário' : '', data: hojeISO(), categoria: ehRec ? (tipo === 'salario' ? 'Salário' : 'Freelance') : 'Alimentação', recorrente: fixa, ...pre },
     fields: [
       { name: 'valor', label: 'Valor (R$)', type: 'money', required: true },
       { name: 'descricao', label: 'Descrição', required: true, maxlength: 60, placeholder: ehRec ? 'Ex.: Salário' : 'Ex.: Supermercado' },
       [{ name: 'data', label: fixa ? 'Primeiro recebimento/pagamento' : 'Data', type: 'date', required: true }, { name: 'categoria', label: 'Categoria', type: 'select', options: ehRec ? CAT_RECEITA : CAT_DESPESA }],
+      ...(ehRec ? [] : [{ name: 'pagamento', label: 'Forma de pagamento', type: 'select', options: [['', 'Não informar'], 'Pix', 'Débito', 'Dinheiro', 'Boleto', 'Transferência', 'Crédito', 'Outro'] }]),
       { name: 'recorrente', label: ehRec ? 'Receita fixa — repete todo mês' : 'Despesa fixa — repete todo mês', type: 'check', hint: 'Repete no mesmo dia a partir da data acima.' },
       ...(l?.recorrente ? [{ name: 'fim', label: 'Encerrar em (opcional)', type: 'month', hint: 'Último mês em que este lançamento aparece.' }] : []),
     ],
@@ -141,11 +142,11 @@ export function formCartao(id) {
   });
 }
 
-export function formCompra(cartaoId, id) {
+export function formCompra(cartaoId, id, pre) {
   const c = id ? achar(state.compras, id) : null;
   abrirForm({
-    titulo: c ? 'Editar compra' : 'Nova compra no cartão', sub: 'Compras parceladas entram nas próximas faturas automaticamente.',
-    values: c || { cartaoId, data: hojeISO(), parcelas: 1, categoria: 'Compras' },
+    titulo: c ? 'Editar compra' : 'Nova compra no cartão', sub: pre ? 'Entendi assim. Confira e toque em Salvar.' : 'Compras parceladas entram nas próximas faturas automaticamente.',
+    values: c || { cartaoId, data: hojeISO(), parcelas: 1, categoria: 'Compras', ...pre },
     fields: [
       { name: 'valor', label: 'Valor total (R$)', type: 'money', required: true },
       { name: 'descricao', label: 'Descrição', required: true, maxlength: 60, placeholder: 'Ex.: Restaurante' },

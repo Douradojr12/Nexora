@@ -11,6 +11,8 @@ const pc = (a, b) => b ? Math.round(a / b * 100) : 0;
 const vazio = (ic, t, p, botoes) => `<div class="card empty"><div class="orb">${icon(ic)}</div><h2>${t}</h2><p>${p}</p><div class="row" style="justify-content:center">${botoes}</div></div>`;
 const btn = (act, rotulo, ic, cls = '', attrs = '') => `<button class="btn ${cls}" data-act="${act}" ${attrs}>${ic ? icon(ic) : ''}${rotulo}</button>`;
 const banner = () => state.demo ? `<div class="demo-banner" role="note"><span><strong>Dados de exemplo.</strong> Os valores são fictícios, só para você conhecer o Nexora.</span>${btn('limpar', 'Apagar e começar do zero', '', 'btn-sm')}</div>` : '';
+// Lançamento rápido por frase (texto ou voz)
+export const rapido = () => `<form class="quick" data-quick autocomplete="off"><span class="quick-ic">${icon('ia')}</span><input class="quick-in" name="q" maxlength="200" placeholder="Ex.: 40 reais de mercado no pix" aria-label="Lançar por frase"><button class="quick-mic" type="button" data-act="voz" aria-label="Falar" title="Falar">${icon('mic')}</button><button class="btn btn-primary quick-go" aria-label="Lançar">${icon('envia')}</button></form>`;
 const corUso = u => u > 80 ? 'bad' : u > 50 ? 'warn' : '';
 const STATUS = { paga: ['ok', 'Paga'], vencida: ['bad', 'Vencida'], fechada: ['warn', 'Fechada'], aberta: ['', 'Aberta'], futura: ['', 'Futura'] };
 
@@ -38,6 +40,7 @@ export function painel(hoje) {
   const h = new Date().getHours(), oi = h < 5 ? 'Boa noite' : h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
   const gasto = pc(r.despesas, r.receitas), maxCat = r.categorias[0]?.valor || 1;
   return `${banner()}
+  <div>${rapido()}<p class="dim xs" style="margin:8px 6px 0">Escreva ou fale o que aconteceu — eu preencho o lançamento e você só confirma.</p></div>
   <section class="card hero">
     <div style="position:relative;z-index:1"><span class="eyebrow">${mesLongo(ym)}</span>
       <h2 class="hello serif">${oi}${state.perfil.nome ? `, ${esc(state.perfil.nome)}` : ''}.</h2>
@@ -84,7 +87,7 @@ export function lancamentos(hoje) {
     if (l.data !== dia) { dia = l.data; lista += `<div class="day-h">${diaMes(dia)}${dia === hoje ? ' · hoje' : ''}</div>`; }
     lista += l.k === 'f'
       ? `<button class="item" data-act="ver-fatura" data-id="${l.cartaoId}" data-ym="${ym}"><span class="ico cr">${icon('cartao')}</span><span class="body"><b>${esc(l.descricao)}</b><span>Cartão de crédito · ${STATUS[l.status][1].toLowerCase()}</span></span><span class="amt num">− ${brl(l.valor)}</span></button>`
-      : `<button class="item" data-act="edit-lanc" data-id="${l.id}"><span class="ico ${l.tipo === 'receita' ? 'in' : 'out'}">${icon(l.tipo === 'receita' ? 'sobe' : 'desce')}</span><span class="body"><b>${esc(l.descricao)}</b><span>${esc(l.categoria)}${l.recorrente ? ' · fixo mensal' : ''}</span></span><span class="amt num ${l.tipo === 'receita' ? 'pos' : ''}">${l.tipo === 'receita' ? '+' : '−'} ${brl(l.valor)}</span></button>`;
+      : `<button class="item" data-act="edit-lanc" data-id="${l.id}"><span class="ico ${l.tipo === 'receita' ? 'in' : 'out'}">${icon(l.tipo === 'receita' ? 'sobe' : 'desce')}</span><span class="body"><b>${esc(l.descricao)}</b><span>${esc(l.categoria)}${l.pagamento ? ` · ${esc(l.pagamento)}` : ''}${l.recorrente ? ' · fixo mensal' : ''}</span></span><span class="amt num ${l.tipo === 'receita' ? 'pos' : ''}">${l.tipo === 'receita' ? '+' : '−'} ${brl(l.valor)}</span></button>`;
   }
   const seg = [['tudo', 'Tudo'], ['receitas', 'Receitas'], ['despesas', 'Despesas']].map(([v, t]) => `<button data-act="filtro" data-v="${v}" aria-pressed="${ui.filtro === v}">${t}</button>`).join('');
   return `${banner()}
@@ -248,6 +251,10 @@ export function configuracoes() {
     <section class="card"><div class="card-head"><h2>${icon('escudo')}Seus dados</h2></div>
       <p class="muted small" style="margin-bottom:14px">Tudo fica guardado apenas neste navegador. Faça backup para não perder ao limpar o histórico ou trocar de aparelho.</p>
       <div class="row">${btn('exportar', 'Baixar backup', 'baixa')}${btn('importar', 'Restaurar backup', 'sobeArq')}<input type="file" id="impFile" accept="application/json,.json" hidden></div></section>
+    <section class="card"><div class="card-head"><h2>${icon('celular')}Usar como aplicativo</h2></div>
+      <p class="muted small" style="margin-bottom:14px">Coloque o Nexora na tela inicial do celular para abrir em um toque, em tela cheia.</p>
+      <div id="instalarBox">${btn('instalar', 'Instalar o Nexora', 'baixa', 'btn-primary')}</div>
+      <p class="dim xs" style="margin-top:12px"><strong>Android (Chrome):</strong> menu ⋮ → "Adicionar à tela inicial" ou "Instalar app". <strong>iPhone (Safari):</strong> botão Compartilhar → "Adicionar à Tela de Início".</p></section>
     <section class="card"><div class="card-head"><h2>Recomeçar</h2></div>
       <p class="muted small" style="margin-bottom:14px">Carregue dados fictícios para explorar o Nexora ou apague tudo para começar do zero.</p>
       <div class="row">${btn('demo', 'Carregar dados de exemplo', 'ia')}${btn('limpar', 'Apagar todos os dados', 'lixo', 'btn-danger')}</div></section>

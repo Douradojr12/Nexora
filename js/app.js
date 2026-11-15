@@ -6,6 +6,7 @@ import { $, $$, esc, icon, toast, contar, hojeISO, uid, num, md } from './util.j
 import { ligarGraficos, limparGraficos } from './charts.js';
 import { abrirGaveta, fecharGaveta, confirmar, mascaraDinheiro, lerDinheiro, formLancamento, formCartao, formCompra, formConsorcio, formInvestimento } from './forms.js';
 import { cambio, atualizarCambio } from './cambio.js';
+import { interpretar } from './parser.js';
 import { SISTEMA, contexto, conversarClaude, responderLocal } from './ai.js';
 
 const rotas = [
@@ -124,8 +125,8 @@ const baixar = (nome, txt) => { const a = document.createElement('a'); a.href = 
 const acoes = {
   novo() {
     const op = (act, attrs, ic, t, d) => `<button class="menu-opt" data-act="${act}" ${attrs}><i>${icon(ic)}</i><span><b>${t}</b><span>${d}</span></span></button>`;
-    abrirGaveta('O que você quer lançar?', 'Escolha uma opção para continuar.',
-      op('add-lanc', 'data-kind="despesa"', 'desce', 'Despesa', 'Conta, mercado, aluguel…') + op('add-lanc', 'data-kind="salario"', 'repete', 'Salário / receita fixa', 'Entra todo mês automaticamente') +
+    abrirGaveta('O que você quer lançar?', 'Fale, escreva ou escolha uma opção.',
+      `<div style="margin-bottom:18px">${P.rapido()}</div>` + op('add-lanc', 'data-kind="despesa"', 'desce', 'Despesa', 'Conta, mercado, aluguel…') + op('add-lanc', 'data-kind="salario"', 'repete', 'Salário / receita fixa', 'Entra todo mês automaticamente') +
       op('add-lanc', 'data-kind="variavel"', 'sobe', 'Receita variável', 'Freela, venda, bônus…') + (state.cartoes.length ? op('add-compra', `data-id="${(state.cartoes.find(c => c.id === ui.cartaoId) || state.cartoes[0]).id}"`, 'cartao', 'Compra no cartão', 'À vista ou parcelada') : '') +
       op('add-cartao', '', 'cartao', 'Cartão de crédito', 'Limite, fechamento e vencimento') + op('add-cons', '', 'alvo', 'Consórcio', 'Parcela e quantas faltam') + op('add-inv', '', 'grafico', 'Investimento', 'Valor aplicado e valor atual'));
   },
@@ -149,6 +150,11 @@ const acoes = {
     const c = state.consorcios.find(x => x.id === d.id); if (!c || c.pagas >= c.total) return;
     commit(s => { c.pagas++; s.lancamentos.push({ id: uid(), tipo: 'despesa', descricao: `Parcela ${c.nome}`, categoria: 'Consórcio', valor: c.parcela, data: hojeISO(), recorrente: false, consorcioId: c.id }); });
     toast(c.pagas >= c.total ? 'Consórcio quitado. Parabéns!' : `Parcela registrada — faltam ${c.total - c.pagas}`);
+  },
+  voz(d, el) { ouvir(el); },
+  async instalar() {
+    if (!promptInstalar) return toast('Use o menu do navegador: "Adicionar à tela inicial"');
+    promptInstalar.prompt(); await promptInstalar.userChoice; promptInstalar = null;
   },
   'sim-taxa'(d) { const i = $('#simTaxa'); i.value = d.v; i.dispatchEvent(new Event('input')); },
   cambio() { atualizarCambio(true); toast('Atualizando cotação…'); },
@@ -177,6 +183,44 @@ document.addEventListener('click', e => {
   const f = acoes[el.dataset.act]; if (f) { e.preventDefault(); f(el.dataset, el); }
 });
 
+// ---------- Lançamento rápido por frase (texto ou voz) ----------
+function lancarFrase(texto) {
+  texto = texto.trim(); if (!texto) return;
+  const r = interpretar(texto, { cartoes: state.cartoes, hoje: hojeISO() });
+  const base = { valor: r.valor, descricao: r.descricao, categoria: r.categoria, data: r.data };
+  if (r.tipo === 'compra') formCompra(r.cartaoId, null, { ...base, cartaoId: r.cartaoId, parcelas: r.parcelas });
+  else if (r.tipo === 'receita') formLancamento('variavel', null, base);
+  else formLancamento('despesa', null, { ...base, pagamento: r.pagamento });
+  if (!r.valor) toast('Não achei o valor na frase — preencha e salve', true);
+}
+document.addEventListener('submit', e => {
+  const f = e.target.closest('form[data-quick]'); if (!f) return;
+  e.preventDefault(); const t = f.elements.q.value; f.elements.q.value = ''; lancarFrase(t);
+});
+const Reconhecedor = window.SpeechRecognition || window.webkitSpeechRecognition;
+let escuta = null;
+function ouvir(botao) {
+  if (!Reconhecedor) return toast('Seu navegador não tem ditado aqui. Use o microfone do teclado.', true);
+  if (escuta) { escuta.stop(); return; }
+  const form = botao.closest('form'), campo = form.elements.q, rec = escuta = new Reconhecedor();
+  let final = '';
+  rec.lang = 'pt-BR'; rec.interimResults = true; rec.maxAlternatives = 1;
+  rec.onstart = () => { form.classList.add('ouvindo'); campo.value = ''; campo.placeholder = 'Ouvindo… pode falar'; };
+  rec.onresult = ev => { final = ''; let tudo = ''; for (const r of ev.results) { tudo += r[0].transcript; if (r.isFinal) final += r[0].transcript; } if (campo.isConnected) campo.value = tudo; };
+  rec.onerror = ev => { if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') toast('Permita o uso do microfone para falar', true); else if (ev.error !== 'aborted' && ev.error !== 'no-speech') toast('Não consegui ouvir. Tente de novo.', true); };
+  rec.onend = () => {
+    escuta = null; form.classList.remove('ouvindo'); campo.placeholder = 'Ex.: 40 reais de mercado no pix';
+    const t = (final || campo.value).trim(); if (t) { campo.value = ''; lancarFrase(t); }
+  };
+  try { rec.start(); } catch { escuta = null; }
+}
+
+// ---------- Aplicativo instalável (PWA) ----------
+let promptInstalar = null;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); promptInstalar = e; });
+addEventListener('appinstalled', () => { promptInstalar = null; toast('Nexora instalado na tela inicial'); });
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => {});
+
 // ---------- Efeitos: brilho que segue o cursor e inclinação 3D dos cartões ----------
 document.addEventListener('pointermove', e => {
   if (e.pointerType === 'touch') return;
@@ -202,3 +246,4 @@ atualizarCambio();
 setInterval(() => { if (!document.hidden) atualizarCambio(); }, 60e3);
 
 navegar();
+if (new URLSearchParams(location.search).has('lancar')) { history.replaceState(null, '', location.pathname + location.hash); acoes.novo(); }
