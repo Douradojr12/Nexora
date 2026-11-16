@@ -14,6 +14,7 @@ const vazio = () => ({
   v: 1, demo: false, perfil: { nome: '' }, ai: { key: '', model: MODELOS[0][0] },
   lancamentos: [], cartoes: [], compras: [], faturasPagas: {}, consorcios: [], investimentos: [],
   sim: { inicial: 100000, mensal: 50000, taxa: 11, anos: 10 },
+  mod: 0, conta: null, // mod = instante da última alteração (para sincronizar); conta = id do usuário dono destes dados
 });
 function normaliza(d) {
   const b = vazio();
@@ -22,7 +23,7 @@ function normaliza(d) {
   if (d.faturasPagas && typeof d.faturasPagas === 'object') b.faturasPagas = d.faturasPagas;
   Object.assign(b.perfil, d.perfil); Object.assign(b.ai, d.ai); Object.assign(b.sim, d.sim);
   if (!MODELOS.some(m => m[0] === b.ai.model)) b.ai.model = MODELOS[0][0];
-  b.demo = !!d.demo;
+  b.demo = !!d.demo; b.mod = +d.mod || 0; b.conta = d.conta || null;
   return b;
 }
 function load() { try { return normaliza(JSON.parse(localStorage.getItem(KEY))); } catch { return vazio(); } }
@@ -33,27 +34,41 @@ export const ui = { ym: ymOf(hojeISO()), filtro: 'tudo', cartaoId: null, fatYm: 
 const ouvintes = new Set();
 export const aoMudar = f => ouvintes.add(f);
 export function commit(fn) {
-  fn(state);
+  fn(state); state.mod = Date.now();
   try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { console.error('Falha ao salvar', e); }
   ouvintes.forEach(f => f());
 }
-export function salvarQuieto(fn) { fn(state); try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
+export function salvarQuieto(fn) { fn(state); state.mod = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
 export const temDados = s => s.lancamentos.length + s.cartoes.length + s.consorcios.length + s.investimentos.length > 0;
 
-export function exportar() { const c = structuredClone(state); c.ai.key = ''; return JSON.stringify(c, null, 2); } // a chave da IA nunca vai no backup
+export function exportar() { const c = structuredClone(state); c.ai.key = ''; c.conta = null; return JSON.stringify(c, null, 2); } // a chave da IA nunca vai no backup
 export function importar(txt) {
   const d = JSON.parse(txt);
   if (!d || d.v !== 1 || !Array.isArray(d.lancamentos)) throw new Error('Arquivo não reconhecido');
-  const key = state.ai.key;
-  commit(() => { state = normaliza(d); state.ai.key = key; });
+  const key = state.ai.key, conta = state.conta;
+  commit(() => { state = normaliza(d); state.ai.key = key; state.conta = conta; });
 }
-export function apagarTudo() { const ai = state.ai, perfil = state.perfil; commit(() => { state = vazio(); state.ai = ai; state.perfil = perfil; }); }
+export function apagarTudo() { const ai = state.ai, perfil = state.perfil, conta = state.conta; commit(() => { state = vazio(); state.ai = ai; state.perfil = perfil; state.conta = conta; }); }
+
+// --- Sincronização com a conta ---
+// O que sobe para o servidor: tudo, menos a chave da IA (segredo que fica só no aparelho).
+export function paraNuvem() { const c = structuredClone(state); c.ai.key = ''; delete c.conta; return c; }
+// Troca os dados locais pelos da conta, sem marcar como alteração local.
+export function adotar(dados, mod, conta) {
+  const key = state.ai.key;
+  state = normaliza(dados); state.ai.key = key; state.mod = mod; state.conta = conta;
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+  ouvintes.forEach(f => f());
+}
+export function vincular(conta) { state.conta = conta; try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
+// Limpa este aparelho (usado ao sair da conta).
+export function esvaziarLocal() { state = vazio(); try { localStorage.removeItem(KEY); } catch {} ouvintes.forEach(f => f()); }
 
 // Dados de exemplo (fictícios), gerados em torno da data de hoje. Marcados com demo:true.
 export function carregarExemplo() {
   const hoje = hojeISO(), ym = ymOf(hoje), m = n => addMonths(ym, n), d = (n, dia) => dataNoMes(m(n), dia);
   const s = vazio();
-  s.demo = true; s.ai = state.ai; s.perfil = state.perfil;
+  s.demo = true; s.ai = state.ai; s.perfil = state.perfil; s.conta = state.conta;
   const L = (tipo, descricao, categoria, valor, data, recorrente = false, extra = {}) => s.lancamentos.push({ id: uid(), tipo, descricao, categoria, valor, data, recorrente, ...extra });
   L('receita', 'Salário', 'Salário', 680000, d(-7, 5), true);
   L('despesa', 'Aluguel', 'Moradia', 190000, d(-7, 10), true);

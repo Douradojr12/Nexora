@@ -25,7 +25,7 @@
   <aside class="sidebar" id="sidebar" aria-label="Navegação principal">
     <div class="brand"><span class="logo"><svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><path d="M8 24V8l16 16V8" stroke="#04120a" stroke-width="3.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg></span><span>Nexora<small>Private Finance</small></span></div>
     <nav id="nav"></nav>
-    <p class="side-note"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg><span>Seus dados ficam guardados apenas neste navegador.</span></p>
+    <p class="side-note" id="sideNote"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg><span id="sideNoteTxt">Seus dados ficam guardados apenas neste navegador.</span></p>
   </aside>
   <div class="main-col">
     <header class="topbar">
@@ -44,9 +44,10 @@
   <div class="drawer-head"><div><h2 id="drawerTitle"></h2><p id="drawerSub"></p></div><button class="icon-btn" id="drawerClose" aria-label="Fechar"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="drawer-body" id="drawerBody"></div>
 </aside>
+<div class="login" id="login" hidden><div class="login-bg" data-gl></div><div class="login-box" id="loginBox"></div></div>
 <dialog id="confirm" aria-labelledby="confirmTitle">
   <form method="dialog"><h2 id="confirmTitle"></h2><p id="confirmText"></p>
-    <div class="row" style="justify-content:flex-end"><button class="btn" value="no">Cancelar</button><button class="btn btn-primary" value="ok" id="confirmOk">Confirmar</button></div></form>
+    <div class="row" style="justify-content:flex-end"><button class="btn" value="no" id="confirmNo">Cancelar</button><button class="btn btn-primary" value="ok" id="confirmOk">Confirmar</button></div></form>
 </dialog>
 <div id="toasts" aria-live="polite"></div>
 <div class="tip" id="tip" role="tooltip"></div>

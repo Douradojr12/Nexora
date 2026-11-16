@@ -48,7 +48,7 @@ function quadro(agora) {
   if (!reduz()) laco = requestAnimationFrame(quadro);
 }
 function rodar() { if (tela && !laco) laco = requestAnimationFrame(quadro); }
-function montarGradiente(root) {
+export function montarGradiente(root) {
   const alvo = $('[data-gl]', root); if (!alvo) return;
   criarGl(); if (!tela) return;
   alvo.prepend(tela); ultimo = 0; rodar();

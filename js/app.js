@@ -7,6 +7,8 @@ import { ligarGraficos, limparGraficos } from './charts.js';
 import { abrirGaveta, fecharGaveta, confirmar, mascaraDinheiro, lerDinheiro, formLancamento, formCartao, formCompra, formConsorcio, formInvestimento } from './forms.js';
 import { cambio, atualizarCambio } from './cambio.js';
 import { iniciarFx, depoisDeRenderizar, transicao, festa, moverIndicador, valoresAtuais, animarMudancas } from './fx.js';
+import * as N from './nuvem.js';
+import { iniciarConta, mostrarLogin, sairDaConta } from './conta.js';
 import { interpretar } from './parser.js';
 import { SISTEMA, contexto, conversarClaude, responderLocal, esquecerMes } from './ai.js';
 
@@ -173,6 +175,12 @@ const acoes = {
     if (!await confirmar('Apagar todos os dados?', 'Lançamentos, cartões, consórcios e investimentos serão removidos deste navegador. Esta ação não pode ser desfeita.', 'Apagar tudo')) return;
     apagarTudo(); ui.cartaoId = ui.fatYm = null; ui.chat = []; esquecerMes(); toast('Tudo limpo. Vamos começar!');
   },
+  'conta-entrar'() { mostrarLogin('entrar'); },
+  'conta-sync'() { N.sincronizar().then(() => toast('Tudo sincronizado'), e => toast(e.message || 'Não foi possível sincronizar', true)); },
+  async 'conta-sair'() {
+    if (!await confirmar('Sair da conta?', 'Os dados serão apagados deste aparelho e continuam salvos na sua conta.', 'Sair')) return;
+    ui.chat = []; esquecerMes(); ui.cartaoId = ui.fatYm = null; await sairDaConta();
+  },
   exportar() { baixar(`nexora-backup-${hojeISO()}.json`, exportar()); toast('Backup baixado'); },
   importar() { $('#impFile').click(); },
   'cfg-nome'() { commit(s => { s.perfil.nome = $('#cfgNome').value.trim(); }); toast('Perfil salvo'); },
@@ -250,6 +258,17 @@ if (cambio) $('#usdVal').textContent = `R$ ${num(cambio.usd.valor)}`;
 atualizarCambio();
 setInterval(() => { if (!document.hidden) atualizarCambio(); }, 60e3);
 
+// ---------- Conta: indicador no menu e atualização da tela ----------
+function pintarConta() {
+  const u = N.usuario(), nota = $('#sideNote');
+  $('#sideNoteTxt').textContent = u ? `${u.email} · ${P.textoSync()}` : 'Seus dados ficam guardados apenas neste navegador.';
+  nota.classList.toggle('sync', !!u); nota.classList.toggle('erro', N.situacao.estado === 'erro'); nota.classList.toggle('girando', N.situacao.estado === 'sincronizando');
+  if (rota.id === 'configuracoes' && !(main.contains(document.activeElement) && /INPUT|SELECT/.test(document.activeElement.tagName))) render(true);
+}
+addEventListener('nexora:nuvem', pintarConta);
+
 iniciarFx();
 navegar();
+pintarConta();
+iniciarConta(() => render());
 if (new URLSearchParams(location.search).has('lancar')) { history.replaceState(null, '', location.pathname + location.hash); acoes.novo(); }

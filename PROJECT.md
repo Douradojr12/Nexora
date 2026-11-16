@@ -16,6 +16,7 @@ Testes: `node --test tests/*.mjs`.
 - **Câmbio** — dólar em tempo real (atualiza a cada 60 s), gráfico de 30 dias, euro, bitcoin e conversor.
 - **Nexora AI** — diagnóstico e dicas locais + chat (o modo local entende mês — "dezembro", "mês que vem" —, categoria, faturas do mês e comparação entre meses); opcionalmente conectado ao Claude com a chave de API do usuário.
 - **Lançamento rápido** — campo no Painel e no botão Novo: escreva ou fale uma frase ("comprei 40 reais de comida no mercado no pix") e o formulário já abre preenchido para confirmar.
+- **Conta e sincronização (opcional)** — tela de login (entrar, criar conta, recuperar senha) e os mesmos dados no celular e no computador. Só liga quando `js/config.js` tem a URL e a chave pública de um projeto Supabase; vazio, o app funciona como antes, só no navegador.
 - **Configurações** — nome, chave/modelo da IA, backup (exportar/restaurar JSON), dados de exemplo, apagar tudo.
 
 ## Estrutura
@@ -26,6 +27,7 @@ Testes: `node --test tests/*.mjs`.
 - `js/pages.js` — telas (HTML a partir do estado) · `js/app.js` — rotas, ações, chat, efeitos
 - `js/forms.js` — gaveta, formulários, validação · `js/charts.js` — gráficos SVG próprios
 - `js/fx.js` + `css/fx.css` — camada de animação: gradiente vivo em WebGL no destaque do painel (30 fps, meia resolução, pausa fora da tela), revelação ao rolar, transição entre páginas, onda de toque, indicador do menu, números que rolam ao mudar, comemoração; tudo desligado com "reduzir movimento"
+- `js/config.js` — endereço e chave pública do servidor de contas · `js/nuvem.js` — login e sincronização (Supabase Auth + tabela `nexora_dados`, via fetch) · `js/conta.js` — tela de login · `supabase/schema.sql` — tabela e regras de acesso
 - `js/cambio.js` — cotações · `js/ai.js` — análise local e integração com o Claude · `js/util.js`
 - `js/parser.js` — interpreta a frase do lançamento rápido (função pura, sem IA)
 - `manifest.webmanifest`, `sw.js`, `icons/` — instalação na tela inicial (PWA); o service worker usa rede primeiro
@@ -39,6 +41,13 @@ Testes: `node --test tests/*.mjs`.
 - Lançamento fixo repete no mesmo dia (ajustado ao fim do mês) a partir do início, até o mês de encerramento opcional.
 - "Registrar parcela paga" do consórcio cria uma despesa na categoria Consórcio; excluir essa despesa devolve a parcela.
 - Dados de exemplo ficam marcados (`demo`) e exibem aviso; sem dados, as telas informam em vez de inventar.
+
+## Sincronização — como funciona
+- Uma linha por usuário com o estado inteiro (JSON) e `mod` (instante da última alteração). Vale a alteração mais recente; edições simultâneas em dois aparelhos offline não são mescladas.
+- Envia 1,5 s após cada alteração; confere o servidor ao abrir, ao voltar para a aba e a cada 45 s.
+- A chave da IA nunca é enviada. Ao sair da conta, os dados locais são apagados (continuam no servidor).
+- Primeiro login em um aparelho que já tem dados: o usuário escolhe entre os da conta e os do aparelho; os do aparelho são baixados como backup antes da troca.
+- Senhas ficam só no Supabase (hash); no navegador ficam apenas os tokens de sessão.
 
 ## Decisões técnicas
 - Armazenamento em `localStorage` (volume pequeno; IndexedDB não se justificou). O backup JSON nunca inclui a chave da IA.
@@ -56,6 +65,7 @@ Testes: `node --test tests/*.mjs`.
 ## Não verificado / pendente
 - Cotações reais: no ambiente de desenvolvimento a rede bloqueia as APIs; a tela foi testada com respostas simuladas.
 - Chat com o Claude: não testado com chave real.
+- Login e sincronização: testados só com um servidor Supabase simulado (criar conta, entrar, senha errada, sincronizar PC ↔ celular, sair, conflito de primeiro login). Não testados contra um projeto Supabase real; confirmação por e-mail e redefinição de senha não foram testadas.
 - Ditado por voz: testado com reconhecimento simulado; depende do navegador (Chrome/Android funciona; iPhone é limitado — usar o microfone do teclado).
 - Instalação como app: manifesto e service worker verificados em Chromium; não testada em aparelho real.
 - Firefox/Safari e leitor de tela; tema claro; orçamentos e metas; relatórios/CSV.

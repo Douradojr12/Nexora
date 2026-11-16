@@ -6,6 +6,7 @@ import { barras, linhas, anel } from './charts.js';
 import { diagnostico, cartoesResumo } from './ai.js';
 import { cambio, estado as estadoCambio } from './cambio.js';
 import { dinheiro } from './forms.js';
+import * as N from './nuvem.js';
 
 const pc = (a, b) => b ? Math.round(a / b * 100) : 0;
 const vazio = (ic, t, p, botoes) => `<div class="card empty"><div class="orb">${icon(ic)}</div><h2>${t}</h2><p>${p}</p><div class="row" style="justify-content:center">${botoes}</div></div>`;
@@ -241,6 +242,16 @@ export function assistente(hoje) {
 }
 
 // ---------- Configurações ----------
+export const textoSync = () => { const s = N.situacao; return s.estado === 'sincronizando' ? 'Sincronizando…' : s.estado === 'erro' ? `Não sincronizado: ${s.erro}` : s.hora ? `Sincronizado às ${new Date(s.hora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : 'Aguardando sincronização'; };
+function contaCard() {
+  const u = N.usuario();
+  if (!N.ativa) return `<section class="card"><div class="card-head"><h2>${icon('nuvem')}Conta e sincronização</h2><span class="badge">Não configurado</span></div><p class="muted small">O servidor de contas ainda não foi configurado. Por enquanto os dados ficam só neste navegador.</p></section>`;
+  if (!u) return `<section class="card"><div class="card-head"><h2>${icon('nuvem')}Conta e sincronização</h2><span class="badge">Sem conta</span></div><p class="muted small" style="margin-bottom:14px">Entre ou crie uma conta para usar os mesmos dados no celular e no computador.</p>${btn('conta-entrar', 'Entrar ou criar conta', 'nuvem', 'btn-primary')}</section>`;
+  return `<section class="card"><div class="card-head"><h2>${icon('nuvem')}Conta e sincronização</h2><span class="badge ${N.situacao.estado === 'erro' ? 'bad' : 'ok'}">${N.situacao.estado === 'erro' ? 'Com erro' : 'Conectada'}</span></div>
+      <div class="stat-line"><span>Conta</span><span>${esc(u.email)}</span></div><div class="stat-line"><span>Situação</span><span>${esc(textoSync())}</span></div>
+      <div class="row mt">${btn('conta-sync', 'Sincronizar agora', 'recarrega')}${btn('conta-sair', 'Sair da conta', 'sair', 'btn-danger')}</div>
+      <p class="dim xs" style="margin-top:12px">Ao sair, os dados são apagados deste aparelho e continuam salvos na sua conta. A chave da IA não é enviada para a conta.</p></section>`;
+}
 export function configuracoes() {
   return `${banner()}<div class="grid g-2">
     <section class="card"><div class="card-head"><h2>Perfil</h2></div>
@@ -250,8 +261,9 @@ export function configuracoes() {
       <div class="field"><label for="cfgKey">Chave da API (sk-ant-…)</label><input class="input" id="cfgKey" type="password" autocomplete="off" value="${esc(state.ai.key)}" placeholder="sk-ant-..."><span class="hint">Fica salva só neste navegador e é enviada apenas à Anthropic. Use em dispositivo pessoal; o uso é cobrado na sua conta da API.</span></div>
       <div class="field"><label for="cfgModel">Modelo</label><select class="input" id="cfgModel">${MODELOS.map(([v, t]) => `<option value="${v}"${v === state.ai.model ? ' selected' : ''}>${t}</option>`).join('')}</select></div>
       <div class="row">${btn('cfg-ia', 'Salvar', 'ok', 'btn-primary')}${state.ai.key ? btn('cfg-ia-off', 'Remover chave', 'lixo', 'btn-danger') : ''}</div></section>
+    ${contaCard()}
     <section class="card"><div class="card-head"><h2>${icon('escudo')}Seus dados</h2></div>
-      <p class="muted small" style="margin-bottom:14px">Tudo fica guardado apenas neste navegador. Faça backup para não perder ao limpar o histórico ou trocar de aparelho.</p>
+      <p class="muted small" style="margin-bottom:14px">${N.usuario() ? 'Seus dados estão na sua conta e neste aparelho. O backup em arquivo é uma cópia extra.' : 'Tudo fica guardado apenas neste navegador. Faça backup para não perder ao limpar o histórico ou trocar de aparelho.'}</p>
       <div class="row">${btn('exportar', 'Baixar backup', 'baixa')}${btn('importar', 'Restaurar backup', 'sobeArq')}<input type="file" id="impFile" accept="application/json,.json" hidden></div></section>
     <section class="card"><div class="card-head"><h2>${icon('celular')}Usar como aplicativo</h2></div>
       <p class="muted small" style="margin-bottom:14px">Coloque o Nexora na tela inicial do celular para abrir em um toque, em tela cheia.</p>

@@ -93,3 +93,36 @@
 .input:focus{transform:translateY(-1px)}
 
 @media (prefers-reduced-motion:reduce){.cursor-glow,.faisca,.onda{display:none}.rv{opacity:1;transform:none;filter:none}}
+
+/* tela de login */
+.login{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:20px;background:var(--bg);overflow:auto}
+.login[hidden]{display:none}
+.login-bg{position:absolute;inset:0;overflow:hidden;background:radial-gradient(ellipse at 30% 20%,#12402c,transparent 60%),radial-gradient(ellipse at 80% 90%,#3d3114,transparent 55%),var(--bg)}
+.login-bg[data-gl]::before{background:radial-gradient(ellipse at center,rgba(6,10,8,.35),rgba(6,10,8,.78));z-index:0}
+.login-bg .gl-bg{z-index:0;border-radius:0}
+.login-box{position:relative;z-index:1;width:min(430px,100%);padding:34px 30px 26px;border-radius:26px;background:rgba(14,19,17,.78);border:1px solid var(--line-2);backdrop-filter:blur(22px);box-shadow:0 40px 120px rgba(0,0,0,.6);animation:rise .7s var(--ease) both}
+.login-box > *{animation:rise .6s var(--ease) both}
+.login-box > *:nth-child(2){animation-delay:.06s}.login-box > *:nth-child(3){animation-delay:.1s}.login-box > *:nth-child(4){animation-delay:.14s}.login-box > *:nth-child(5){animation-delay:.18s}.login-box > *:nth-child(n+6){animation-delay:.22s}
+.login-marca{display:flex;align-items:center;gap:12px;font-size:1.3rem;font-weight:700;letter-spacing:-.03em;margin-bottom:26px}
+.login-marca .logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#4be093,#1f8f57);display:grid;place-items:center;box-shadow:0 8px 26px rgba(60,203,127,.4),inset 0 1px 0 rgba(255,255,255,.4);animation:logoPulse 5s ease-in-out infinite}
+.login-marca small{display:block;font-size:.6rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+.login-box h2{font-size:1.9rem;margin-bottom:6px}
+.login-abas{display:flex;margin:20px 0 18px}.login-abas button{flex:1}
+.login-box form{margin-top:18px}
+.senha{position:relative}.senha .input{padding-right:46px}
+.olho{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;display:grid;place-items:center;background:none;border:0;border-radius:10px;color:var(--text-3)}
+.olho:hover{color:var(--text);background:var(--glass-2)}
+.login-erro{color:var(--danger);font-size:.85rem;min-height:1.3em;margin:-4px 0 8px}
+.login-go{width:100%;padding:13px;font-size:1rem}
+.login-go.carregando{color:transparent;pointer-events:none}
+.login-go.carregando::before{content:"";position:absolute;width:20px;height:20px;border-radius:50%;border:2.5px solid rgba(4,18,10,.3);border-top-color:#04120a;animation:spin .7s linear infinite}
+.login-links{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:18px}
+.link{background:none;border:0;color:var(--accent);font-size:.88rem;padding:4px 8px;border-radius:8px}.link:hover{text-decoration:underline}.link.dim{color:var(--text-3)}
+.login-nota{display:flex;gap:8px;align-items:flex-start;margin-top:22px;padding-top:16px;border-top:1px solid var(--line);font-size:.74rem;color:var(--text-3)}
+.login-nota svg{flex:none;margin-top:1px;color:var(--accent)}
+body.em-login{overflow:hidden}
+/* indicador de conta no menu */
+.side-note.sync svg{color:var(--accent)}.side-note.erro svg{color:var(--danger)}
+.side-note.sync span{word-break:break-word}
+.side-note.girando svg{animation:pulsaSync 1s ease-in-out infinite}
+@keyframes pulsaSync{50%{opacity:.35;transform:scale(.85)}}

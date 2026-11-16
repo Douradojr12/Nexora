@@ -28,10 +28,14 @@ export function fecharGaveta() {
 }
 
 export function confirmar(titulo, texto, rotulo = 'Confirmar') {
+  return escolher(titulo, texto, rotulo, 'Cancelar').then(r => r === 'ok');
+}
+// Diálogo com duas saídas: devolve 'ok', 'no' ou null (fechou com Esc).
+export function escolher(titulo, texto, rotuloOk, rotuloNao) {
   const dlg = $('#confirm');
-  $('#confirmTitle').textContent = titulo; $('#confirmText').textContent = texto; $('#confirmOk').textContent = rotulo;
-  dlg.showModal();
-  return new Promise(res => { dlg.onclose = () => res(dlg.returnValue === 'ok'); });
+  $('#confirmTitle').textContent = titulo; $('#confirmText').textContent = texto; $('#confirmOk').textContent = rotuloOk; $('#confirmNo').textContent = rotuloNao;
+  dlg.returnValue = ''; dlg.showModal();
+  return new Promise(res => { dlg.onclose = () => res(dlg.returnValue === 'ok' ? 'ok' : dlg.returnValue === 'no' ? 'no' : null); });
 }
 
 const CORES = { esmeralda: '#1fa367', onix: '#3a403c', ouro: '#d9b871', safira: '#3a7bdc', ametista: '#8a55d9', rubi: '#d2475a' };

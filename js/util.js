@@ -40,6 +40,7 @@ const P = {
   envia: '<path d="M4 12l16-8-6 16-3-7z"/>', recarrega: '<path d="M20 11A8 8 0 006 6.3L4 8M4 4v4h4M4 13a8 8 0 0014 4.7l2-1.7M20 20v-4h-4"/>',
   lixo: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>', baixa: '<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>', sobeArq: '<path d="M12 16V5M7 9l5-5 5 5M5 20h14"/>',
   mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/>', celular: '<rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M11 18h2"/>',
+  olho: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>', nuvem: '<path d="M7 18a4.5 4.5 0 01-.6-8.96A6 6 0 0118 10.5a3.75 3.75 0 01-.5 7.5z"/>', sair: '<path d="M15 4h3a2 2 0 012 2v12a2 2 0 01-2 2h-3M10 8l-4 4 4 4M6 12h10"/>',
   calendario: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', escudo: '<path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z"/>',
 };
 export const icon = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${P[n] || ''}</svg>`;
