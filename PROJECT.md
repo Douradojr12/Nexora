@@ -14,7 +14,7 @@ Testes: `node --test tests/*.mjs`.
 - **Consórcios** — parcela, pagas/total, quantas faltam, já pago, falta pagar, término previsto; registrar parcela paga.
 - **Investimentos** — simulador de juros compostos com gráfico; carteira com aplicado × atual.
 - **Câmbio** — dólar em tempo real (atualiza a cada 60 s), gráfico de 30 dias, euro, bitcoin e conversor.
-- **Nexora AI** — diagnóstico e dicas locais + chat; opcionalmente conectado ao Claude com a chave de API do usuário.
+- **Nexora AI** — diagnóstico e dicas locais + chat (o modo local entende mês — "dezembro", "mês que vem" —, categoria, faturas do mês e comparação entre meses); opcionalmente conectado ao Claude com a chave de API do usuário.
 - **Lançamento rápido** — campo no Painel e no botão Novo: escreva ou fale uma frase ("comprei 40 reais de comida no mercado no pix") e o formulário já abre preenchido para confirmar.
 - **Configurações** — nome, chave/modelo da IA, backup (exportar/restaurar JSON), dados de exemplo, apagar tudo.
 

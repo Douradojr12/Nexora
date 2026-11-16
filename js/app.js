@@ -7,7 +7,7 @@ import { ligarGraficos, limparGraficos } from './charts.js';
 import { abrirGaveta, fecharGaveta, confirmar, mascaraDinheiro, lerDinheiro, formLancamento, formCartao, formCompra, formConsorcio, formInvestimento } from './forms.js';
 import { cambio, atualizarCambio } from './cambio.js';
 import { interpretar } from './parser.js';
-import { SISTEMA, contexto, conversarClaude, responderLocal } from './ai.js';
+import { SISTEMA, contexto, conversarClaude, responderLocal, esquecerMes } from './ai.js';
 
 const rotas = [
   { id: 'painel', titulo: 'Painel', icon: 'painel', pg: P.painel },
@@ -167,7 +167,7 @@ const acoes = {
   },
   async limpar() {
     if (!await confirmar('Apagar todos os dados?', 'Lançamentos, cartões, consórcios e investimentos serão removidos deste navegador. Esta ação não pode ser desfeita.', 'Apagar tudo')) return;
-    apagarTudo(); ui.cartaoId = ui.fatYm = null; ui.chat = []; toast('Tudo limpo. Vamos começar!');
+    apagarTudo(); ui.cartaoId = ui.fatYm = null; ui.chat = []; esquecerMes(); toast('Tudo limpo. Vamos começar!');
   },
   exportar() { baixar(`nexora-backup-${hojeISO()}.json`, exportar()); toast('Backup baixado'); },
   importar() { $('#impFile').click(); },

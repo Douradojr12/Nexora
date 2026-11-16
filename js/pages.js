@@ -226,7 +226,7 @@ export const msgHtml = m => `<div class="msg ${m.role === 'user' ? 'user' : 'bot
 export function assistente(hoje) {
   const { itens, nota } = diagnostico(state, hoje), on = !!state.ai.key;
   const faixa = nota == null ? '' : nota >= 80 ? 'Saúde financeira ótima' : nota >= 60 ? 'No caminho certo' : nota >= 40 ? 'Pede atenção' : 'Situação crítica';
-  const sug = ['Como estou este mês?', 'Onde posso economizar?', 'Como estão meus cartões?', 'Quanto falta do consórcio?', 'Quais contas vencem em breve?', 'Devo investir quanto?'];
+  const sug = ['Como estou este mês?', 'Onde posso economizar?', 'Como estão meus cartões?', 'Quanto falta do consórcio?', `Como fica ${mesLongo(F.addMonths(F.ymOf(hoje), 1)).split(' de ')[0]}?`, 'Compare com o mês passado', 'Quais contas vencem em breve?'];
   return `${banner()}<div class="grid g-23">
     <div class="stack">
       <section class="card"><div class="card-head"><h2>Diagnóstico</h2><span class="sub">análise local</span></div>
@@ -236,7 +236,7 @@ export function assistente(hoje) {
     <section class="card chat"><div class="chat-head"><div class="ai-orb"></div><div style="flex:1"><b>Nexora AI</b><div class="xs dim">${on ? `Conectada ao ${esc(MODELOS.find(m => m[0] === state.ai.model)?.[1].split(' (')[0] || 'Claude')}` : 'Modo local — respostas a partir dos seus dados'}</div></div>${on ? '<span class="badge ok">Claude</span>' : `<a class="btn btn-sm btn-gold" href="#/configuracoes">${icon('ia')}Ativar Claude</a>`}</div>
       <div class="chat-log" id="chatLog" aria-live="polite">${ui.chat.length ? ui.chat.map(msgHtml).join('') : `<div class="msg bot"><p>Olá${state.perfil.nome ? `, ${esc(state.perfil.nome)}` : ''}! Sou a <strong>Nexora AI</strong>. Analiso suas receitas, despesas, cartões e consórcios e respondo com base nos seus números.</p><p>Escolha uma sugestão abaixo ou escreva sua pergunta.</p></div>`}</div>
       <div class="chat-foot"><div class="chips">${sug.map(t => `<button class="chip" data-act="ai-sug">${t}</button>`).join('')}</div>
-        <form class="chat-form" id="chatForm"><input class="input" id="chatIn" placeholder="Pergunte sobre seus gastos…" autocomplete="off" maxlength="2000" aria-label="Mensagem"><button class="btn btn-primary" aria-label="Enviar">${icon('envia')}</button></form></div></section>
+        <form class="chat-form" id="chatForm"><input class="input" id="chatIn" placeholder="Ex.: quanto vou gastar em dezembro?" autocomplete="off" maxlength="2000" aria-label="Mensagem"><button class="btn btn-primary" aria-label="Enviar">${icon('envia')}</button></form></div></section>
   </div>`;
 }
 
