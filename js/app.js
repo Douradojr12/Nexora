@@ -136,6 +136,7 @@ const acoes = {
   'add-cons': () => formConsorcio(), 'edit-cons': d => formConsorcio(d.id),
   'add-inv': () => formInvestimento(), 'edit-inv': d => formInvestimento(d.id),
   mes(d) { ui.ym = F.addMonths(ui.ym, +d.d); render(true); },
+  'mes-hoje'() { ui.ym = F.ymOf(hojeISO()); render(true); },
   filtro(d) { ui.filtro = d.v; render(true); },
   'sel-cartao'(d) { ui.cartaoId = d.id; ui.fatYm = null; render(true); },
   fat(d) { const c = state.cartoes.find(x => x.id === ui.cartaoId) || state.cartoes[0]; ui.fatYm = F.addMonths(ui.fatYm || F.faturaAtualYm(state, c, hojeISO()), +d.d); render(true); },

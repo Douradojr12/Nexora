@@ -13,6 +13,7 @@ const btn = (act, rotulo, ic, cls = '', attrs = '') => `<button class="btn ${cls
 const banner = () => state.demo ? `<div class="demo-banner" role="note"><span><strong>Dados de exemplo.</strong> Os valores são fictícios, só para você conhecer o Nexora.</span>${btn('limpar', 'Apagar e começar do zero', '', 'btn-sm')}</div>` : '';
 // Lançamento rápido por frase (texto ou voz)
 export const rapido = () => `<form class="quick" data-quick autocomplete="off"><span class="quick-ic">${icon('ia')}</span><input class="quick-in" name="q" maxlength="200" placeholder="Ex.: 40 reais de mercado no pix" aria-label="Lançar por frase"><button class="quick-mic" type="button" data-act="voz" aria-label="Falar" title="Falar">${icon('mic')}</button><button class="btn btn-primary quick-go" aria-label="Lançar">${icon('envia')}</button></form>`;
+const navMes = (ym, hoje) => `<div class="monthnav"><button class="icon-btn" data-act="mes" data-d="-1" aria-label="Mês anterior">${icon('esq')}</button><strong>${mesLongo(ym)}</strong><button class="icon-btn" data-act="mes" data-d="1" aria-label="Próximo mês">${icon('dir')}</button>${ym !== F.ymOf(hoje) ? `<button class="chip" data-act="mes-hoje">Mês atual</button>` : ''}</div>`;
 const corUso = u => u > 80 ? 'bad' : u > 50 ? 'warn' : '';
 const STATUS = { paga: ['ok', 'Paga'], vencida: ['bad', 'Vencida'], fechada: ['warn', 'Fechada'], aberta: ['', 'Aberta'], futura: ['', 'Futura'] };
 
@@ -34,23 +35,24 @@ export function painel(hoje) {
   <div class="grid g-3">${[['carteira', 'Receitas e despesas', 'Salário fixo, renda variável e gastos por categoria.'], ['cartao', 'Cartões e faturas', 'Limite, disponível e parcelas em cada fatura.'], ['alvo', 'Consórcios', 'Quanto paga, quantas faltam e quando termina.'], ['grafico', 'Simulador', 'Veja seus aportes crescerem com juros compostos.'], ['cambio', 'Dólar ao vivo', 'Cotação, gráfico de 30 dias e conversor.'], ['ia', 'Nexora AI', 'Diagnóstico, alertas e dicas sob medida.']]
     .map(([i, t, p]) => `<div class="card lift feat"><i>${icon(i)}</i><div><b>${t}</b><p>${p}</p></div></div>`).join('')}</div>`;
 
-  const ym = F.ymOf(hoje), r = F.resumoMes(state, ym, hoje), serie = F.serieMeses(state, ym, 6, hoje);
+  const ymHoje = F.ymOf(hoje), ym = ui.ym, r = F.resumoMes(state, ym, hoje), serie = F.serieMeses(state, ym, 6, hoje);
   const cr = cartoesResumo(state), venc = F.proximosVencimentos(state, hoje), { itens } = diagnostico(state, hoje);
   const inv = state.investimentos.reduce((t, i) => t + i.atual, 0), apl = state.investimentos.reduce((t, i) => t + i.aplicado, 0);
   const h = new Date().getHours(), oi = h < 5 ? 'Boa noite' : h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
   const gasto = pc(r.despesas, r.receitas), maxCat = r.categorias[0]?.valor || 1;
   return `${banner()}
   <div>${rapido()}<p class="dim xs" style="margin:8px 6px 0">Escreva ou fale o que aconteceu — eu preencho o lançamento e você só confirma.</p></div>
+  <div class="spread">${navMes(ym, hoje)}${ym > ymHoje ? '<span class="badge gold">Previsão: lançamentos fixos e faturas já lançadas</span>' : ''}</div>
   <section class="card hero">
     <div style="position:relative;z-index:1"><span class="eyebrow">${mesLongo(ym)}</span>
       <h2 class="hello serif">${oi}${state.perfil.nome ? `, ${esc(state.perfil.nome)}` : ''}.</h2>
-      <p class="muted">${r.sobra >= 0 ? 'Você está fechando o mês no azul.' : 'As despesas passaram das receitas neste mês.'}</p>
+      <p class="muted">${!r.receitas && !r.despesas ? 'Nenhum lançamento neste mês ainda.' : ym > ymHoje ? (r.sobra >= 0 ? 'Pela previsão, este mês fecha no azul.' : 'Pela previsão, as despesas passam das receitas.') : ym < ymHoje ? (r.sobra >= 0 ? 'Este mês fechou no azul.' : 'Neste mês as despesas passaram das receitas.') : r.sobra >= 0 ? 'Você está fechando o mês no azul.' : 'As despesas passaram das receitas neste mês.'}</p>
       <div class="big ${r.sobra < 0 ? 'neg' : ''}">${count(r.sobra)}</div>
-      <p class="muted small">Sobra do mês${r.receitas ? ` · ${pc(r.sobra, r.receitas)}% da sua renda` : ''}</p>
+      <p class="muted small">${ym > ymHoje ? 'Sobra prevista' : 'Sobra do mês'}${r.receitas ? ` · ${pc(r.sobra, r.receitas)}% da sua renda` : ''}</p>
       <div class="row mt">${btn('add-lanc', 'Despesa', 'desce', 'btn-sm', 'data-kind="despesa"')}${btn('add-lanc', 'Receita', 'sobe', 'btn-sm', 'data-kind="variavel"')}<a class="btn btn-sm btn-gold" href="#/assistente">${icon('ia')}Perguntar à IA</a></div></div>
     <div class="hero-side">
       <div class="flow"><div class="top"><span>Receitas</span><strong class="num">${brl(r.receitas)}</strong></div><div class="track"><div class="fill" style="width:${r.receitas ? 100 : 0}%"></div></div></div>
-      <div class="flow"><div class="top"><span>Despesas${r.receitas ? ` · ${gasto}% da renda` : ''}</span><strong class="num">${brl(r.despesas)}</strong></div><div class="track"><div class="fill ${gasto > 100 ? 'bad' : 'gold'}" style="width:${Math.min(100, r.receitas ? gasto : 100)}%"></div></div></div>
+      <div class="flow"><div class="top"><span>Despesas${r.receitas ? ` · ${gasto}% da renda` : ''}</span><strong class="num">${brl(r.despesas)}</strong></div><div class="track"><div class="fill ${gasto > 100 ? 'bad' : 'gold'}" style="width:${r.despesas ? Math.min(100, r.receitas ? gasto : 100) : 0}%"></div></div></div>
     </div></section>
   <div class="grid g-4">
     <div class="card kpi lift"><div class="label"><i>${icon('sobe')}</i>Receitas do mês</div><div class="value">${count(r.receitas)}</div><div class="foot">Fixa ${brlCurto(r.receitaFixa)} · variável ${brlCurto(r.receitaVariavel)}</div></div>
@@ -91,7 +93,7 @@ export function lancamentos(hoje) {
   }
   const seg = [['tudo', 'Tudo'], ['receitas', 'Receitas'], ['despesas', 'Despesas']].map(([v, t]) => `<button data-act="filtro" data-v="${v}" aria-pressed="${ui.filtro === v}">${t}</button>`).join('');
   return `${banner()}
-  <div class="spread"><div class="monthnav"><button class="icon-btn" data-act="mes" data-d="-1" aria-label="Mês anterior">${icon('esq')}</button><strong>${mesLongo(ym)}</strong><button class="icon-btn" data-act="mes" data-d="1" aria-label="Próximo mês">${icon('dir')}</button></div>
+  <div class="spread">${navMes(ym, hoje)}
     <div class="row">${btn('add-lanc', 'Salário / fixa', 'repete', '', 'data-kind="salario"')}${btn('add-lanc', 'Receita variável', 'sobe', '', 'data-kind="variavel"')}${btn('add-lanc', 'Despesa', 'desce', 'btn-primary', 'data-kind="despesa"')}</div></div>
   <div class="grid g-4">
     <div class="card kpi"><div class="label"><i>${icon('repete')}</i>Salário e receitas fixas</div><div class="value">${count(r.receitaFixa)}</div></div>
