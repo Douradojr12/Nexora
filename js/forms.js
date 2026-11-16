@@ -16,6 +16,7 @@ export function abrirGaveta(titulo, sub, html) {
   focoAnterior = document.activeElement;
   $('#drawerTitle').textContent = titulo; $('#drawerSub').textContent = sub || '';
   $('#drawerBody').innerHTML = html;
+  $$('#drawerBody > *, #frm > *').forEach((el, i) => el.style.setProperty('--i', Math.min(i, 12)));
   drawer.classList.add('open'); drawer.setAttribute('aria-hidden', 'false'); scrim.classList.add('open');
   setTimeout(() => ($('input:not([type=hidden]),select,button', $('#drawerBody')) || $('#drawerClose')).focus(), 60);
 }

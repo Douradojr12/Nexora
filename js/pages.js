@@ -28,7 +28,7 @@ function pillDolar() {
 // ---------- Painel ----------
 export function painel(hoje) {
   if (!temDados(state)) return `
-  <section class="card welcome"><span class="eyebrow">Bem-vindo ao Nexora</span>
+  <section class="card welcome" data-gl><span class="eyebrow">Bem-vindo ao Nexora</span>
     <h2 class="serif">Seu dinheiro, <em>claro</em> como nunca.</h2>
     <p class="muted" style="max-width:56ch;margin:0 auto 26px">Controle salário, despesas, cartões, faturas e consórcios em um só lugar — com simulador de investimentos, dólar em tempo real e uma IA que analisa seus gastos.</p>
     <div class="row" style="justify-content:center">${btn('add-lanc', 'Cadastrar meu salário', 'mais', 'btn-primary', 'data-kind="salario"')}${btn('demo', 'Ver com dados de exemplo', 'ia', 'btn-gold')}</div></section>
@@ -43,7 +43,7 @@ export function painel(hoje) {
   return `${banner()}
   <div>${rapido()}<p class="dim xs" style="margin:8px 6px 0">Escreva ou fale o que aconteceu — eu preencho o lançamento e você só confirma.</p></div>
   <div class="spread">${navMes(ym, hoje)}${ym > ymHoje ? '<span class="badge gold">Previsão: lançamentos fixos e faturas já lançadas</span>' : ''}</div>
-  <section class="card hero">
+  <section class="card hero" data-gl>
     <div style="position:relative;z-index:1"><span class="eyebrow">${mesLongo(ym)}</span>
       <h2 class="hello serif">${oi}${state.perfil.nome ? `, ${esc(state.perfil.nome)}` : ''}.</h2>
       <p class="muted">${!r.receitas && !r.despesas ? 'Nenhum lançamento neste mês ainda.' : ym > ymHoje ? (r.sobra >= 0 ? 'Pela previsão, este mês fecha no azul.' : 'Pela previsão, as despesas passam das receitas.') : ym < ymHoje ? (r.sobra >= 0 ? 'Este mês fechou no azul.' : 'Neste mês as despesas passaram das receitas.') : r.sobra >= 0 ? 'Você está fechando o mês no azul.' : 'As despesas passaram das receitas neste mês.'}</p>

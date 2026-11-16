@@ -44,7 +44,7 @@ const P = {
 };
 export const icon = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${P[n] || ''}</svg>`;
 
-export function toast(msg, ruim = false) {
+export function toast(msg, ruim = false) { // dura 2,8 s, com barra de tempo
   const el = document.createElement('div');
   el.className = 'toast' + (ruim ? ' bad' : '');
   el.setAttribute('role', 'status');

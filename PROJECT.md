@@ -25,6 +25,7 @@ Testes: `node --test tests/*.mjs`.
 - `js/store.js` — estado + localStorage (`nexora:v1`), backup, dados de exemplo
 - `js/pages.js` — telas (HTML a partir do estado) · `js/app.js` — rotas, ações, chat, efeitos
 - `js/forms.js` — gaveta, formulários, validação · `js/charts.js` — gráficos SVG próprios
+- `js/fx.js` + `css/fx.css` — camada de animação: gradiente vivo em WebGL no destaque do painel (30 fps, meia resolução, pausa fora da tela), revelação ao rolar, transição entre páginas, onda de toque, indicador do menu, números que rolam ao mudar, comemoração; tudo desligado com "reduzir movimento"
 - `js/cambio.js` — cotações · `js/ai.js` — análise local e integração com o Claude · `js/util.js`
 - `js/parser.js` — interpreta a frase do lançamento rápido (função pura, sem IA)
 - `manifest.webmanifest`, `sw.js`, `icons/` — instalação na tela inicial (PWA); o service worker usa rede primeiro

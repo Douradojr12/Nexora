@@ -176,7 +176,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .drawer-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:24px 24px 16px}
 .drawer-head h2{font-size:1.25rem} .drawer-head p{color:var(--text-3);font-size:.84rem;margin-top:4px}
 .drawer-body{padding:8px 24px 28px;overflow:auto;flex:1}
-.drawer.open .drawer-body > *{animation:rise .5s var(--ease) both}
+.drawer.open .drawer-body > *:not(form),.drawer.open #frm > *{animation:rise .5s var(--ease) both;animation-delay:calc(var(--i,0)*45ms)}
 .menu-opt{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:15px;border-radius:16px;border:1px solid var(--line);background:var(--glass);margin-bottom:10px;transition:all .25s var(--ease)}
 .menu-opt:hover{border-color:var(--accent);background:var(--accent-soft);transform:translateX(4px)}
 .menu-opt i{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--glass-2);color:var(--accent);flex:none}

@@ -6,6 +6,7 @@ import { $, $$, esc, icon, toast, contar, hojeISO, uid, num, md } from './util.j
 import { ligarGraficos, limparGraficos } from './charts.js';
 import { abrirGaveta, fecharGaveta, confirmar, mascaraDinheiro, lerDinheiro, formLancamento, formCartao, formCompra, formConsorcio, formInvestimento } from './forms.js';
 import { cambio, atualizarCambio } from './cambio.js';
+import { iniciarFx, depoisDeRenderizar, transicao, festa, moverIndicador, valoresAtuais, animarMudancas } from './fx.js';
 import { interpretar } from './parser.js';
 import { SISTEMA, contexto, conversarClaude, responderLocal, esquecerMes } from './ai.js';
 
@@ -21,15 +22,18 @@ const rotas = [
 ];
 const nav = $('#nav'), main = $('#main'), sidebar = $('#sidebar'), scrim = $('#scrim'), menuBtn = $('#menuBtn');
 nav.innerHTML = rotas.map(r => `<a href="#/${r.id}" data-id="${r.id}">${icon(r.icon)}<span>${r.titulo}</span>${r.tag ? `<span class="tag">${r.tag}</span>` : ''}</a>`).join('');
-let rota = rotas[0];
+let rota = rotas[0], rotaPintada = null;
 
 function render(semEntrada = false) {
   try {
+    const antes = semEntrada && rotaPintada === rota.id ? valoresAtuais(main) : null;
+    rotaPintada = rota.id;
     limparGraficos();
     main.innerHTML = `<div class="page stack${semEntrada ? ' no-enter' : ''}">${rota.pg(hojeISO())}</div>`;
     $$('.page > *', main).forEach((el, i) => el.style.setProperty('--i', i));
     ligarGraficos(main); mascaraDinheiro(main);
-    if (!semEntrada) contar(main);
+    depoisDeRenderizar(main, !semEntrada);
+    if (antes) animarMudancas(main, antes);
     montar[rota.id]?.();
   } catch (err) {
     console.error(err);
@@ -42,7 +46,7 @@ function navegar() {
   document.title = `${rota.titulo} — Nexora`;
   $('#pageTitle').textContent = rota.titulo;
   $$('a', nav).forEach(a => a.dataset.id === rota.id ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
-  setMenu(false); render(); scrollTo(0, 0);
+  setMenu(false); moverIndicador(); transicao(() => { render(); scrollTo(0, 0); });
 }
 const setMenu = on => { sidebar.classList.toggle('open', on); menuBtn.setAttribute('aria-expanded', on); scrim.classList.toggle('open', on || $('#drawer').classList.contains('open')); };
 menuBtn.onclick = () => setMenu(!sidebar.classList.contains('open'));
@@ -145,12 +149,12 @@ const acoes = {
     const k = `${d.id}|${d.ym}`, paga = !!state.faturasPagas[k];
     ui.fatYm = d.ym;
     commit(s => { if (paga) delete s.faturasPagas[k]; else s.faturasPagas[k] = true; });
-    toast(paga ? 'Pagamento desfeito' : 'Fatura paga — limite liberado');
+    toast(paga ? 'Pagamento desfeito' : 'Fatura paga — limite liberado'); if (!paga) festa();
   },
   'pagar-cons'(d) {
     const c = state.consorcios.find(x => x.id === d.id); if (!c || c.pagas >= c.total) return;
     commit(s => { c.pagas++; s.lancamentos.push({ id: uid(), tipo: 'despesa', descricao: `Parcela ${c.nome}`, categoria: 'Consórcio', valor: c.parcela, data: hojeISO(), recorrente: false, consorcioId: c.id }); });
-    toast(c.pagas >= c.total ? 'Consórcio quitado. Parabéns!' : `Parcela registrada — faltam ${c.total - c.pagas}`);
+    toast(c.pagas >= c.total ? 'Consórcio quitado. Parabéns!' : `Parcela registrada — faltam ${c.total - c.pagas}`); festa(c.pagas >= c.total);
   },
   voz(d, el) { ouvir(el); },
   async instalar() {
@@ -246,5 +250,6 @@ if (cambio) $('#usdVal').textContent = `R$ ${num(cambio.usd.valor)}`;
 atualizarCambio();
 setInterval(() => { if (!document.hidden) atualizarCambio(); }, 60e3);
 
+iniciarFx();
 navegar();
 if (new URLSearchParams(location.search).has('lancar')) { history.replaceState(null, '', location.pathname + location.hash); acoes.novo(); }

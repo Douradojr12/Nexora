@@ -50,7 +50,9 @@ export function linhas({ labels, series, fmt, rotulo, zero = false, h = 240 }) {
   const xs = [0, Math.floor((n - 1) / 2), n - 1].filter((v, i, a) => a.indexOf(v) === i)
     .map((i, k, a) => `<text x="${X(i)}" y="${H - 6}" text-anchor="${k === 0 ? 'start' : k === a.length - 1 ? 'end' : 'middle'}">${esc(labels[i])}</text>`).join('');
   const pts = series.map(s => `<circle class="pt" r="5" fill="${s.cor}"/>`).join('');
-  return `<svg class="chart" data-chart="${id}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(rotulo)}">${grades}${corpo}<line class="xh" y1="${t}" y2="${H - b}"/>${pts}${xs}</svg>`;
+  const fimX = X(n - 1), fimY = Y(series[0].valores[n - 1]);
+  const pulso = `<circle class="pulso" cx="${fimX}" cy="${fimY}" r="9" fill="${series[0].cor}"/><circle class="fimpt" cx="${fimX}" cy="${fimY}" r="4" fill="${series[0].cor}"/>`;
+  return `<svg class="chart" data-chart="${id}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(rotulo)}">${grades}${corpo}${pulso}<line class="xh" y1="${t}" y2="${H - b}"/>${pts}${xs}</svg>`;
 }
 
 export function anel(pct, { cls = '', tam = 120, centro = '' } = {}) {

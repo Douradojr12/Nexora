@@ -1,0 +1,95 @@
+/* Nexora — camada de animação */
+/* gradiente vivo (WebGL) atrás do destaque; o fundo em CSS do cartão é o reserva quando não há WebGL */
+[data-gl]{isolation:isolate}
+.gl-bg{position:absolute;inset:0;width:100%;height:100%;z-index:-2;border-radius:inherit;animation:fade 1.2s both}
+[data-gl]::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;opacity:1!important;pointer-events:none;
+  background:linear-gradient(100deg,rgba(6,10,8,.82) 0%,rgba(6,10,8,.58) 45%,rgba(6,10,8,.34) 100%)}
+.welcome[data-gl]::before{background:radial-gradient(ellipse at 50% 45%,rgba(6,10,8,.78),rgba(6,10,8,.5))}
+@media (max-width:1180px){[data-gl]::before{background:linear-gradient(180deg,rgba(6,10,8,.72),rgba(6,10,8,.6))}}
+
+/* revelação ao rolar */
+.rv{opacity:0;transform:translateY(26px) scale(.98);filter:blur(5px);transition:opacity .75s var(--ease),transform .75s var(--ease),filter .75s var(--ease)!important;will-change:transform,opacity}
+.rv.in{opacity:1;transform:none;filter:none}
+.rv:not(.in) .fill,.rv:not(.in) .fg,.rv:not(.in) .bar,.rv:not(.in) .line,.rv:not(.in) .area,.rv:not(.in) .list > *,.rv:not(.in) .pulso,.rv:not(.in) .fimpt{animation-play-state:paused}
+.page:not(.no-enter) .list > *{animation:rise .55s var(--ease) both;animation-delay:calc(.12s + var(--j,0)*50ms)}
+
+/* transição entre páginas */
+::view-transition-old(root){animation:vtSai .22s var(--ease) both}
+::view-transition-new(root){animation:vtEntra .38s var(--ease) both}
+@keyframes vtSai{to{opacity:0;transform:scale(.992)}}
+@keyframes vtEntra{from{opacity:0;transform:translateY(10px)}}
+
+/* número que mudou */
+.mudou{animation:mudou .9s var(--ease)}
+@keyframes mudou{0%{text-shadow:0 0 0 rgba(60,203,127,0)}30%{text-shadow:0 0 22px rgba(60,203,127,.9)}100%{text-shadow:0 0 0 rgba(60,203,127,0)}}
+
+/* brilho no número principal */
+.hero .big{background-image:linear-gradient(100deg,#fff 0%,#b9e8cd 30%,#fff 45%,#ecd08f 60%,#fff 80%);background-size:250% 100%;animation:brilho 7s linear infinite}
+.hero .big.neg{background-image:linear-gradient(100deg,#ffd4d2,#f0706d 40%,#ffd4d2 60%,#f0706d);background-size:250% 100%}
+@keyframes brilho{to{background-position:-250% 0}}
+
+/* menu: indicador deslizante e entrada em cascata */
+#nav{position:relative}
+.nav-ind{position:absolute;left:0;right:0;top:0;height:44px;border-radius:var(--radius-s);background:linear-gradient(90deg,rgba(60,203,127,.22),rgba(60,203,127,.04));opacity:0;pointer-events:none;transition:transform .45s var(--spring),height .3s,opacity .3s}
+#nav a{animation:navIn .5s var(--ease) both;animation-delay:calc(var(--i,0)*45ms + .1s);z-index:1}
+@keyframes navIn{from{opacity:0;transform:translateX(-14px)}}
+#nav a svg{transition:transform .35s var(--spring)}
+#nav a:hover svg{transform:scale(1.18) rotate(-6deg)}
+
+/* onda de toque */
+.item,.chip,.menu-opt,#nav a,.icon-btn,.seg button,.quick-mic{position:relative;overflow:hidden}
+.onda{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.28),rgba(255,255,255,0) 65%);transform:scale(0);animation:onda .65s var(--ease) forwards;pointer-events:none}
+@keyframes onda{to{transform:scale(1);opacity:0}}
+
+/* cabeçalho: progresso de rolagem */
+.topbar{transition:box-shadow .3s,background .3s}
+.topbar.rolou{box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.topbar::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--accent),var(--gold));transform-origin:left;transform:scaleX(var(--sp,0));transition:transform .15s linear}
+
+/* brilho do cursor */
+.cursor-glow{position:fixed;left:-260px;top:-260px;width:520px;height:520px;border-radius:50%;z-index:-1;pointer-events:none;background:radial-gradient(circle,rgba(60,203,127,.10),rgba(217,184,113,.04) 40%,transparent 68%);will-change:transform}
+
+/* comemoração */
+.faisca{position:fixed;z-index:80;border-radius:2px;pointer-events:none;animation:faisca 1.25s cubic-bezier(.15,.7,.3,1) both}
+@keyframes faisca{0%{transform:translate(0,0) rotate(0) scale(.4);opacity:1}70%{opacity:1}100%{transform:translate(var(--dx),calc(var(--dy) + 140px)) rotate(var(--rot)) scale(1);opacity:0}}
+
+/* avisos com barra de tempo */
+.toast{position:relative;overflow:hidden}
+.toast::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:100%;background:linear-gradient(90deg,var(--accent),var(--gold));transform-origin:left;animation:tempo 2.8s linear both}
+.toast.bad::after{background:var(--danger)}
+@keyframes tempo{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+
+/* micro-interações */
+.kpi .label i{transition:transform .4s var(--spring)}
+.kpi:hover .label i{transform:translateY(-3px) rotate(-8deg) scale(1.1)}
+.item .ico{transition:transform .35s var(--spring)}
+.item:hover .ico{transform:scale(1.1) rotate(-5deg)}
+.insight i,.feat i,.menu-opt i{transition:transform .4s var(--spring)}
+.insight:hover i,.feat:hover i,.menu-opt:hover i{transform:scale(1.14) rotate(-8deg)}
+.badge.ok,.badge.gold{position:relative;overflow:hidden}
+.badge.ok::after,.badge.gold::after{content:"";position:absolute;top:0;bottom:0;width:40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);animation:sheen 3.6s var(--ease) infinite;animation-delay:1s}
+.quick-ic svg{animation:cintila 3.2s ease-in-out infinite}
+@keyframes cintila{0%,100%{transform:scale(1) rotate(0);opacity:.85}50%{transform:scale(1.2) rotate(12deg);opacity:1}}
+.cc-wrap.sel .cc::before{animation:lustro 5.5s ease-in-out infinite}
+@keyframes lustro{0%,100%{opacity:.75}50%{opacity:1.25}}
+.btn-primary{background-size:180% 100%;transition:transform .2s var(--ease),box-shadow .25s,background-position .5s var(--ease)}
+.btn-primary:hover{background-position:100% 0}
+.empty .orb::after,.ai-orb::before{content:"";position:absolute;inset:-6px;border-radius:inherit;border:1px solid rgba(60,203,127,.35);animation:eco 2.6s ease-out infinite}
+.empty .orb{position:relative}
+@keyframes eco{from{transform:scale(.9);opacity:.9}to{transform:scale(1.35);opacity:0}}
+.ai-orb::before{border-radius:50%}
+
+/* gráficos: ponto vivo no fim da linha e barras que reagem */
+.chart .fimpt{stroke:var(--surface);stroke-width:2;animation:fade .4s 1.5s both}
+.chart .pulso{transform-box:fill-box;transform-origin:center;opacity:0;animation:pulsoG 2.2s ease-out 1.6s infinite}
+@keyframes pulsoG{0%{transform:scale(.4);opacity:.55}100%{transform:scale(2.2);opacity:0}}
+.chart .grp:hover .bar{filter:brightness(1.25)}
+.fill{position:relative;overflow:hidden}
+.fill::after{content:"";position:absolute;top:0;bottom:0;width:60px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);animation:sheen 3.4s var(--ease) infinite;animation-delay:1.4s}
+.live{position:relative}
+
+/* campo de moeda e foco */
+.input{transition:border-color .2s,box-shadow .25s,background .2s,transform .25s var(--ease)}
+.input:focus{transform:translateY(-1px)}
+
+@media (prefers-reduced-motion:reduce){.cursor-glow,.faisca,.onda{display:none}.rv{opacity:1;transform:none;filter:none}}
