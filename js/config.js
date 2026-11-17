@@ -3,5 +3,5 @@
 // só enxerga a própria linha (regras em supabase/schema.sql). Nunca coloque aqui a chave "secret"/"service_role".
 export const NUVEM = {
   url: '',   // ex.: https://abcdefgh.supabase.co
-  chave: '', // ex.: sb_publishable_... ou eyJ... (anon)
+  chave: 'sb_publishable_ZSeO3yNYYXyWf7sYadzxxQ_tfVVMCAP', // chave pública (publishable)
 };
